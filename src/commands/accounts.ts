@@ -59,6 +59,7 @@ export async function accountsAdd(): Promise<void> {
     }
   } finally {
     rl.close();
+    process.stdin.destroy();
   }
 }
 

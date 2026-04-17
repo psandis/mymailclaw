@@ -24,6 +24,9 @@ Email scanner, categorizer, and cleaner CLI for the OpenClaw ecosystem. Connects
 | `mmclaw clean --action archive` | Action to apply: `delete` moves to Trash, `archive` removes from Inbox but keeps the email (default: `delete`) |
 | `mmclaw clean --execute` | Actually perform the cleanup — shows a WARNING and requires confirmation |
 | `mmclaw clean --from-file <path>` | Execute cleanup from a reviewed dry-run file — always prompts confirmation |
+| `mmclaw unsubscribe` | List emails with unsubscribe links (dry-run by default) |
+| `mmclaw unsubscribe --execute` | Follow HTTP unsubscribe links automatically |
+| `mmclaw unsubscribe --category newsletter` | Filter to a specific category |
 
 ## Categories
 
@@ -47,6 +50,21 @@ mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-2026-04-17.json
 ```
 
 Each entry in the cleanup file includes the email ID, date, sender, subject, AI summary, category, and intended action. You stay in full control.
+
+## Unsubscribe Workflow
+
+`mmclaw unsubscribe` reads the `List-Unsubscribe` headers stored during scan and follows the HTTP links automatically. Mailto-only entries are flagged for manual action.
+
+```bash
+# Preview — lists all emails with unsubscribe links
+mmclaw unsubscribe
+mmclaw unsubscribe --category newsletter
+
+# Execute — follow HTTP unsubscribe links
+mmclaw unsubscribe --execute
+```
+
+HTTP links are followed with a GET request (with redirect following). Mailto entries cannot be automated — the output tells you which senders require manual action.
 
 ## Storage
 
@@ -79,15 +97,18 @@ API keys are only needed when using `--ai`. Without `--ai`, no external calls ar
 
 ### Gmail Setup
 
-Gmail requires OAuth2. You need a Google Cloud project with the Gmail API enabled and OAuth2 credentials:
+Gmail requires OAuth2. You need a Google Cloud project with the Gmail API enabled:
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Create OAuth2 credentials (Desktop app type)
-3. Set environment variables before running `mmclaw accounts add`:
+2. Enable **Gmail API** — APIs & Services → Library → search "Gmail API" → Enable
+3. Create credentials — APIs & Services → Credentials → **Create Credentials → OAuth client ID**
+4. Application type: **Desktop app**
+5. Go to **OAuth consent screen** → add your Gmail address as a **test user**
+6. Put your credentials in `~/.mymailclaw/.env`:
 
-```bash
-export GMAIL_CLIENT_ID=your-client-id
-export GMAIL_CLIENT_SECRET=your-client-secret
+```
+GMAIL_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=GOCSPX-your-secret
 ```
 
 Then run:
@@ -116,7 +137,8 @@ mymailclaw/
 │   │   ├── accounts.ts         # accounts add/list/remove
 │   │   ├── scan.ts             # fetch + categorize
 │   │   ├── list.ts             # list by category
-│   │   └── clean.ts            # dry-run + execute cleanup
+│   │   ├── clean.ts            # dry-run + execute cleanup
+│   │   └── unsubscribe.ts      # list + follow unsubscribe links
 │   └── lib/
 │       ├── types.ts            # TypeScript interfaces
 │       ├── config.ts           # config and paths
@@ -136,7 +158,8 @@ mymailclaw/
 │   ├── ai.test.ts
 │   ├── scan.test.ts
 │   ├── list.test.ts
-│   └── clean.test.ts
+│   ├── clean.test.ts
+│   └── unsubscribe.test.ts
 ├── package.json
 ├── tsconfig.json
 ├── tsup.config.ts
@@ -185,7 +208,7 @@ mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-2026-04-17.json
 pnpm test
 ```
 
-65 tests across 8 test files covering rules, db, accounts, config, AI, scan, list, and clean.
+71 tests across 9 test files covering rules, db, accounts, config, AI, scan, list, clean, and unsubscribe.
 
 ## Development
 

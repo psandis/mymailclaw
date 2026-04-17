@@ -29,6 +29,22 @@ export function ensureDataDir(): void {
   if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
   const exportsDir = getExportsDir();
   if (!existsSync(exportsDir)) mkdirSync(exportsDir, { recursive: true });
+  loadDotEnv();
+}
+
+function loadDotEnv(): void {
+  const envFile = join(getDataDir(), ".env");
+  if (!existsSync(envFile)) return;
+  const lines = readFileSync(envFile, "utf-8").split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const value = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+    if (key && !(key in process.env)) process.env[key] = value;
+  }
 }
 
 export function loadConfig(): MymailclawConfig {

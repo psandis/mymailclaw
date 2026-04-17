@@ -36,10 +36,16 @@ export async function scan(opts: ScanOptions, json: boolean): Promise<void> {
     if (!account) continue;
     if (!json) console.log(chalk.dim(`\nFetching ${account.email}...`));
 
-    const raw =
-      account.type === "gmail"
-        ? await fetchGmailEmails(account as GmailAccount, { limit: opts.limit, since })
-        : await fetchImapEmails(account as ImapAccount, { limit: opts.limit, since });
+    let raw: Awaited<ReturnType<typeof fetchGmailEmails>>;
+    try {
+      raw =
+        account.type === "gmail"
+          ? await fetchGmailEmails(account as GmailAccount, { limit: opts.limit, since })
+          : await fetchImapEmails(account as ImapAccount, { limit: opts.limit, since });
+    } catch (err) {
+      console.error(chalk.red(`  Failed: ${err instanceof Error ? err.message.split("\n")[0] : err}`));
+      continue;
+    }
 
     if (!json) console.log(chalk.dim(`  ${raw.length} emails fetched — applying rules...`));
 
@@ -86,6 +92,7 @@ export async function scan(opts: ScanOptions, json: boolean): Promise<void> {
         category,
         summary,
         hasUnsubscribe: e.hasUnsubscribe,
+        unsubscribeHeader: e.unsubscribeHeader,
         scannedAt: now,
       };
 

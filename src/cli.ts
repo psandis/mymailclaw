@@ -119,4 +119,31 @@ program
     }
   });
 
+program
+  .command("unsubscribe")
+  .description("List and follow unsubscribe links from scanned emails")
+  .option("--account <id>", "Filter by account")
+  .option("--category <cat>", "Filter by category")
+  .option("--limit <n>", "Max emails to process", parseInt)
+  .option("--execute", "Actually follow HTTP unsubscribe links")
+  .option("--json", "Output as JSON")
+  .action(async (opts) => {
+    const { unsubscribe } = await import("./commands/unsubscribe.js");
+    ensureDataDir();
+    initDb();
+    try {
+      await unsubscribe(
+        {
+          account: opts.account,
+          category: opts.category,
+          limit: opts.limit,
+          execute: !!opts.execute,
+        },
+        !!opts.json,
+      );
+    } finally {
+      closeDb();
+    }
+  });
+
 program.parse();

@@ -44,6 +44,7 @@ export interface Email {
   category: EmailCategory;
   summary: string | null;
   hasUnsubscribe: boolean;
+  unsubscribeHeader: string | null;
   scannedAt: string;
 }
 

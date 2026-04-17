@@ -1,9 +1,5 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import type { Email, EmailCategory } from "./types.js";
-
-const DATA_DIR = join(fileURLToPath(import.meta.url), "..", "..", "..", "data");
+import rulesData from "../../data/rules.json" with { type: "json" };
 
 interface RulesData {
   marketingDomains: string[];
@@ -13,15 +9,8 @@ interface RulesData {
   transactionalSubjectPatterns: string[];
 }
 
-function loadRules(): RulesData {
-  return JSON.parse(readFileSync(join(DATA_DIR, "rules.json"), "utf-8"));
-}
-
-let _rules: RulesData | null = null;
-
 function getRules(): RulesData {
-  if (!_rules) _rules = loadRules();
-  return _rules;
+  return rulesData as RulesData;
 }
 
 interface RuleMatch {

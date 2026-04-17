@@ -45,6 +45,7 @@ export async function fetchImapEmails(
       subject: get("subject"),
       snippet: "",
       hasUnsubscribe: !!get("list-unsubscribe"),
+      unsubscribeHeader: get("list-unsubscribe") || null,
     };
   });
 

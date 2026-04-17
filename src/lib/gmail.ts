@@ -165,6 +165,7 @@ export interface RawEmail {
   subject: string;
   snippet: string;
   hasUnsubscribe: boolean;
+  unsubscribeHeader: string | null;
 }
 
 export async function fetchGmailEmails(
@@ -186,12 +187,17 @@ export async function fetchGmailEmails(
   const list = (await listRes.json()) as { messages?: { id: string }[] };
   const messages = list.messages ?? [];
 
+  const CONCURRENCY = 10;
   const emails: RawEmail[] = [];
-  for (const msg of messages) {
-    const detail = await fetchMessage(msg.id, token);
-    if (detail) emails.push(detail);
+  for (let i = 0; i < messages.length; i += CONCURRENCY) {
+    const batch = messages.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(batch.map((msg) => fetchMessage(msg.id, token)));
+    for (const detail of results) {
+      if (detail) emails.push(detail);
+    }
+    process.stdout.write(`\r  Fetching messages... ${Math.min(i + CONCURRENCY, messages.length)}/${messages.length}`);
   }
-
+  process.stdout.write("\n");
   return emails;
 }
 
@@ -220,6 +226,7 @@ async function fetchMessage(id: string, token: string): Promise<RawEmail | null>
     subject: get("Subject"),
     snippet: msg.snippet ?? "",
     hasUnsubscribe: !!get("List-Unsubscribe"),
+    unsubscribeHeader: get("List-Unsubscribe") || null,
   };
 }
 
