@@ -136,34 +136,42 @@ async function executeFromFile(filePath: string, json: boolean): Promise<void> {
 async function executeEntries(entries: CleanupEntry[], json: boolean): Promise<void> {
   let done = 0;
   let failed = 0;
+  const succeeded: CleanupEntry[] = [];
+  const CONCURRENCY = 10;
 
-  for (const entry of entries) {
-    const account = getAccount(entry.accountId);
-    if (!account) {
-      failed++;
-      continue;
-    }
-
-    try {
-      if (account.type === "gmail") {
-        if (entry.action === "delete") await deleteGmailEmail(account as GmailAccount, entry.id);
-        else if (entry.action === "archive")
-          await archiveGmailEmail(account as GmailAccount, entry.id);
-      } else {
-        if (entry.action === "delete") await deleteImapEmail(account as ImapAccount, entry.id);
-        else if (entry.action === "archive")
-          await archiveImapEmail(account as ImapAccount, entry.id);
-      }
-      done++;
-      if (!json) process.stdout.write(`\r  ${done}/${entries.length} processed...`);
-    } catch {
-      failed++;
-    }
+  for (let i = 0; i < entries.length; i += CONCURRENCY) {
+    const batch = entries.slice(i, i + CONCURRENCY);
+    await Promise.all(
+      batch.map(async (entry) => {
+        const account = getAccount(entry.accountId);
+        if (!account) { failed++; return; }
+        try {
+          if (account.type === "gmail") {
+            if (entry.action === "delete") await deleteGmailEmail(account as GmailAccount, entry.id);
+            else if (entry.action === "archive") await archiveGmailEmail(account as GmailAccount, entry.id);
+          } else {
+            if (entry.action === "delete") await deleteImapEmail(account as ImapAccount, entry.id);
+            else if (entry.action === "archive") await archiveImapEmail(account as ImapAccount, entry.id);
+          }
+          done++;
+          succeeded.push(entry);
+        } catch {
+          failed++;
+        }
+      }),
+    );
+    if (!json) process.stdout.write(`\r  ${done + failed}/${entries.length} processed...`);
   }
 
   if (json) {
-    console.log(JSON.stringify({ done, failed, total: entries.length }));
+    console.log(JSON.stringify({ done, failed, total: entries.length, emails: succeeded }));
   } else {
+    console.log("\n");
+    for (const e of succeeded) {
+      console.log(
+        `  ${chalk.green("✓")} ${chalk.red(e.action.padEnd(10))}  ${e.from.slice(0, 35).padEnd(35)}  ${e.subject.slice(0, 50)}`,
+      );
+    }
     console.log(
       `\n${chalk.green(`Done: ${done}`)}  ${failed > 0 ? chalk.red(`Failed: ${failed}`) : ""}\n`,
     );

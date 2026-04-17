@@ -21,7 +21,7 @@ Fetches emails from all configured accounts and categorizes them locally.
 | Command | Description |
 |---------|-------------|
 | `mmclaw scan` | Fetch and categorize using rules only |
-| `mmclaw scan --since <period>` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) — e.g. `7d`, `2w`, `1m`, `365d` |
+| `mmclaw scan --since <period>` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) - e.g. `7d`, `2w`, `1m`, `365d` |
 | `mmclaw scan --limit <n>` | Cap emails fetched per account (default: all emails in the date range) |
 | `mmclaw scan --account <id\|email>` | Scan a specific account only |
 | `mmclaw scan --ai` | Use AI to categorize emails that rules cannot classify with confidence |
@@ -37,26 +37,26 @@ Fetches emails from all configured accounts and categorizes them locally.
 
 ### Clean
 
-Dry-run by default — previews what would be cleaned and writes a review file.
+Dry-run by default - previews what would be cleaned and writes a review file.
 
 | Command | Description |
 |---------|-------------|
 | `mmclaw clean` | Preview all emails that would be cleaned (dry-run) |
 | `mmclaw clean --category <cat>` | Filter by category |
-| `mmclaw clean --older-than <period>` | Filter by age — e.g. `30d`, `6m`, `365d` |
+| `mmclaw clean --older-than <period>` | Filter by age - e.g. `30d`, `6m`, `365d` |
 | `mmclaw clean --action <action>` | `delete` moves to Trash, `archive` removes from Inbox but keeps the email (default: `delete`) |
 | `mmclaw clean --account <id\|email>` | Filter by account |
-| `mmclaw clean --execute` | Actually perform the cleanup — shows a WARNING and requires confirmation |
-| `mmclaw clean --from-file <path>` | Execute cleanup from a reviewed dry-run file — always prompts confirmation |
+| `mmclaw clean --execute` | Actually perform the cleanup - shows a WARNING and requires confirmation |
+| `mmclaw clean --from-file <path>` | Execute cleanup from a reviewed dry-run file - always prompts confirmation |
 
 ### Unsubscribe
 
-Reads `List-Unsubscribe` headers stored during scan. Dry-run by default — no action taken until `--execute`.
+Reads `List-Unsubscribe` headers stored during scan. Dry-run by default - no action taken until `--execute`.
 
 | Command | Description |
 |---------|-------------|
 | `mmclaw unsubscribe` | List emails with unsubscribe links, showing HTTP vs mailto |
-| `mmclaw unsubscribe --execute` | Follow HTTP unsubscribe links — unsubscribes on the sender's side, does not touch your inbox or DB |
+| `mmclaw unsubscribe --execute` | Follow HTTP unsubscribe links - unsubscribes on the sender's side, does not touch your inbox or DB |
 | `mmclaw unsubscribe --category <cat>` | Filter by category |
 | `mmclaw unsubscribe --account <id\|email>` | Filter by account |
 | `mmclaw unsubscribe --limit <n>` | Cap number of emails processed |
@@ -77,14 +77,14 @@ Manage the local SQLite database. Does not touch your inbox.
 
 Emails are categorized as: `marketing`, `newsletter`, `transactional`, `personal`, `work`, `social`, `unknown`.
 
-Classification uses rule-based matching first (sender domain, subject patterns, List-Unsubscribe header). Add `--ai` to use AI for emails that rules cannot classify with confidence. Rules are defined in `data/rules.json` — not hardcoded.
+Classification uses rule-based matching first (sender domain, subject patterns, List-Unsubscribe header). Add `--ai` to use AI for emails that rules cannot classify with confidence. Rules are defined in `data/rules.json` - not hardcoded.
 
 ## Cleanup Workflow
 
-Cleanup is safe by design — dry-run is the default:
+Cleanup is safe by design - dry-run is the default:
 
 ```bash
-# 1. Preview — dry-run is the default, writes a review file
+# 1. Preview - dry-run is the default, writes a review file
 mmclaw clean --category marketing --older-than 30d
 
 # 2. Review and edit the generated file at ~/.mymailclaw/exports/cleanup-YYYY-MM-DD.json
@@ -116,22 +116,22 @@ mmclaw db clean --older-than 90d --category newsletter --execute
 mmclaw db remove <email-id>
 ```
 
-`db clean` only removes records from the local SQLite database — it does not touch your inbox.
+`db clean` only removes records from the local SQLite database - it does not touch your inbox.
 
 ## Unsubscribe Workflow
 
 `mmclaw unsubscribe` reads the `List-Unsubscribe` headers stored during scan and follows the HTTP links automatically. Mailto-only entries are flagged for manual action.
 
 ```bash
-# Preview — lists all emails with unsubscribe links
+# Preview - lists all emails with unsubscribe links
 mmclaw unsubscribe
 mmclaw unsubscribe --category newsletter
 
-# Execute — follow HTTP unsubscribe links
+# Execute - follow HTTP unsubscribe links
 mmclaw unsubscribe --execute
 ```
 
-HTTP links are followed with a GET request (with redirect following). This actually unsubscribes you from the mailing list on the sender's side — it does not delete or modify anything in your inbox or local DB. Mailto entries cannot be automated — the output tells you which senders require manual action.
+HTTP links are followed with a GET request (with redirect following). This actually unsubscribes you from the mailing list on the sender's side - it does not delete or modify anything in your inbox or local DB. Mailto entries cannot be automated - the output tells you which senders require manual action.
 
 ## Storage
 
@@ -141,7 +141,7 @@ All data stored at `~/.mymailclaw/`. Override with `MYMAILCLAW_HOME`.
 ~/.mymailclaw/
 ├── config.json        # AI provider, model, API keys
 ├── accounts.json      # Gmail tokens and IMAP credentials (mode 600)
-├── mymailclaw.db      # SQLite — emails, categories, scan history
+├── mymailclaw.db      # SQLite - emails, categories, scan history
 └── exports/           # Dry-run cleanup files
 ```
 
@@ -167,8 +167,8 @@ API keys are only needed when using `--ai`. Without `--ai`, no external calls ar
 Gmail requires OAuth2. You need a Google Cloud project with the Gmail API enabled:
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Enable **Gmail API** — APIs & Services → Library → search "Gmail API" → Enable
-3. Create credentials — APIs & Services → Credentials → **Create Credentials → OAuth client ID**
+2. Enable **Gmail API** - APIs & Services → Library → search "Gmail API" → Enable
+3. Create credentials - APIs & Services → Credentials → **Create Credentials → OAuth client ID**
 4. Application type: **Desktop app**
 5. Go to **OAuth consent screen** → add your Gmail address as a **test user**
 6. Put your credentials in `~/.mymailclaw/.env`:
@@ -182,14 +182,14 @@ Then run:
 
 ```bash
 mmclaw accounts add
-# Choose (1) Gmail — browser opens for authorization
+# Choose (1) Gmail - browser opens for authorization
 ```
 
 ### IMAP Setup
 
 ```bash
 mmclaw accounts add
-# Choose (2) IMAP — enter host, port, username, password
+# Choose (2) IMAP - enter host, port, username, password
 ```
 
 Credentials are stored with mode 600 in `~/.mymailclaw/accounts.json`.
@@ -254,7 +254,7 @@ The package is `mymailclaw` on npm. The binary is `mmclaw`.
 ## Usage
 
 ```bash
-# First run — add an account
+# First run - add an account
 mmclaw accounts add
 
 # Scan inbox
@@ -291,7 +291,7 @@ pnpm test
 
 ## Related
 
-- [psclawmcp](https://github.com/psandis/psclawmcp) — MCP server exposing OpenClaw tools to AI assistants
+- [psclawmcp](https://github.com/psandis/psclawmcp) - MCP server exposing OpenClaw tools to AI assistants
 
 ## License
 
