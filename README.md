@@ -139,6 +139,7 @@ All data stored at `~/.mymailclaw/`. Override with `MYMAILCLAW_HOME`.
 
 ```
 ~/.mymailclaw/
+├── .env               # GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET
 ├── config.json        # AI provider, model, API keys
 ├── accounts.json      # Gmail tokens and IMAP credentials (mode 600)
 ├── mymailclaw.db      # SQLite - emails, categories, scan history
