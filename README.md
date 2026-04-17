@@ -91,7 +91,7 @@ mmclaw clean --category marketing --older-than 30d
 # Remove any entries you want to keep
 
 # 3. Execute only what's in the file
-mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-2026-04-17.json
+mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-YYYY-MM-DD.json
 ```
 
 Each entry in the cleanup file includes the email ID, date, sender, subject, AI summary, category, and intended action. You stay in full control.
@@ -269,7 +269,7 @@ mmclaw list --category marketing
 mmclaw clean --category marketing --older-than 30d
 
 # Execute after review
-mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-2026-04-17.json
+mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-YYYY-MM-DD.json
 ```
 
 ## Testing
@@ -282,10 +282,29 @@ pnpm test
 
 ## Development
 
+To work on mymailclaw locally, clone the repo and install dependencies:
+
 ```bash
 pnpm install
+```
+
+Run the CLI directly from source without building first:
+
+```bash
+pnpm dev -- scan --since 7d
+pnpm dev -- list
+pnpm dev -- unsubscribe
+```
+
+Build the TypeScript to `dist/`:
+
+```bash
 pnpm build
-pnpm dev
+```
+
+Lint, format, and test:
+
+```bash
 pnpm lint
 pnpm test
 ```
