@@ -6,32 +6,71 @@ Email scanner, categorizer, and cleaner CLI for the OpenClaw ecosystem. Connects
 
 ## Commands
 
+### Accounts
+
 | Command | Description |
 |---------|-------------|
 | `mmclaw accounts add` | Add a Gmail or IMAP account |
 | `mmclaw accounts list` | List configured accounts |
 | `mmclaw accounts remove <id\|email>` | Remove an account |
-| `mmclaw scan` | Fetch and categorize emails (rules only) |
-| `mmclaw scan --ai` | Use AI to categorize uncertain emails |
-| `mmclaw scan --since 7d` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) — e.g. `7d`, `2w`, `1m`, `365d` |
-| `mmclaw scan --limit 200` | Cap emails fetched per account (default: all emails in the date range) |
-| `mmclaw scan --account <id>` | Scan a specific account only |
-| `mmclaw list` | Show all emails grouped by category |
-| `mmclaw list --category marketing` | Filter by category |
-| `mmclaw list --limit 50` | Limit results |
-| `mmclaw clean --category marketing` | Preview what would be cleaned (dry-run by default) |
-| `mmclaw clean --older-than 30d` | Filter emails older than N days (`d`), weeks (`w`), or months (`m`) — e.g. `30d`, `6m`, `2y` is not supported, use `730d` |
-| `mmclaw clean --action archive` | Action to apply: `delete` moves to Trash, `archive` removes from Inbox but keeps the email (default: `delete`) |
-| `mmclaw clean --execute` | Actually perform the cleanup — shows a WARNING and requires confirmation |
-| `mmclaw clean --from-file <path>` | Execute cleanup from a reviewed dry-run file — always prompts confirmation |
-| `mmclaw unsubscribe` | List emails with unsubscribe links (dry-run by default) |
-| `mmclaw unsubscribe --execute` | Follow HTTP unsubscribe links automatically |
-| `mmclaw unsubscribe --category newsletter` | Filter to a specific category |
-| `mmclaw db stats` | Show database summary — total count, categories, date range, last scan |
-| `mmclaw db clean --older-than 90d` | Preview emails to remove from local DB (dry-run by default) |
-| `mmclaw db clean --older-than 90d --execute` | Actually remove emails from local DB |
-| `mmclaw db clean --older-than 90d --category newsletter --execute` | Remove only newsletter emails older than 90 days from DB |
-| `mmclaw db remove <id>` | Remove a single email record from local DB |
+
+### Scan
+
+Fetches emails from all configured accounts and categorizes them locally.
+
+| Option | Description |
+|--------|-------------|
+| _(no options)_ | Fetch and categorize using rules only |
+| `--since <period>` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) — e.g. `7d`, `2w`, `1m`, `365d` |
+| `--limit <n>` | Cap emails fetched per account (default: all emails in the date range) |
+| `--account <id\|email>` | Scan a specific account only |
+| `--ai` | Use AI to categorize emails that rules cannot classify with confidence |
+
+### List
+
+| Option | Description |
+|--------|-------------|
+| _(no options)_ | Show all emails grouped by category with counts |
+| `--category <cat>` | Filter by category |
+| `--limit <n>` | Limit number of results shown |
+| `--account <id\|email>` | Filter by account |
+
+### Clean
+
+Dry-run by default — previews what would be cleaned and writes a review file.
+
+| Option | Description |
+|--------|-------------|
+| `--category <cat>` | Filter by category |
+| `--older-than <period>` | Filter by age — e.g. `30d`, `6m`, `365d` |
+| `--action <action>` | `delete` moves to Trash, `archive` removes from Inbox but keeps the email (default: `delete`) |
+| `--account <id\|email>` | Filter by account |
+| `--execute` | Actually perform the cleanup — shows a WARNING and requires confirmation |
+| `--from-file <path>` | Execute cleanup from a reviewed dry-run file — always prompts confirmation |
+
+### Unsubscribe
+
+Reads `List-Unsubscribe` headers stored during scan. Dry-run by default — no action taken until `--execute`.
+
+| Option | Description |
+|--------|-------------|
+| _(no options)_ | List emails with unsubscribe links, showing HTTP vs mailto |
+| `--execute` | Follow HTTP unsubscribe links — unsubscribes on the sender's side, does not touch your inbox or DB |
+| `--category <cat>` | Filter by category |
+| `--account <id\|email>` | Filter by account |
+| `--limit <n>` | Cap number of emails processed |
+
+### DB
+
+Manage the local SQLite database. Does not touch your inbox.
+
+| Command | Description |
+|---------|-------------|
+| `mmclaw db stats` | Show total count, categories, date range, and last scan time |
+| `mmclaw db clean --older-than <period>` | Preview emails to remove from DB (dry-run by default) |
+| `mmclaw db clean --older-than <period> --execute` | Actually remove emails from DB |
+| `mmclaw db clean --older-than <period> --category <cat> --execute` | Remove only matching category |
+| `mmclaw db remove <id>` | Remove a single email record from DB |
 
 ## Categories
 
@@ -91,7 +130,7 @@ mmclaw unsubscribe --category newsletter
 mmclaw unsubscribe --execute
 ```
 
-HTTP links are followed with a GET request (with redirect following). Mailto entries cannot be automated — the output tells you which senders require manual action.
+HTTP links are followed with a GET request (with redirect following). This actually unsubscribes you from the mailing list on the sender's side — it does not delete or modify anything in your inbox or local DB. Mailto entries cannot be automated — the output tells you which senders require manual action.
 
 ## Storage
 
