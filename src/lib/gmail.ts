@@ -173,19 +173,26 @@ export async function fetchGmailEmails(
   opts: { limit?: number; since?: Date },
 ): Promise<RawEmail[]> {
   const token = await getValidToken(account);
-  const limit = opts.limit ?? 100;
+  const hardLimit = opts.limit ?? Infinity;
 
   let query = "";
   if (opts.since) query = `after:${Math.floor(opts.since.getTime() / 1000)}`;
 
-  const listRes = await fetch(
-    `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=${limit}&q=${encodeURIComponent(query)}`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+  const messages: { id: string }[] = [];
+  let pageToken: string | undefined;
 
-  if (!listRes.ok) throw new Error(`Gmail list failed: ${await listRes.text()}`);
-  const list = (await listRes.json()) as { messages?: { id: string }[] };
-  const messages = list.messages ?? [];
+  do {
+    const url =
+      `https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=500&q=${encodeURIComponent(query)}` +
+      (pageToken ? `&pageToken=${pageToken}` : "");
+    const listRes = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!listRes.ok) throw new Error(`Gmail list failed: ${await listRes.text()}`);
+    const list = (await listRes.json()) as { messages?: { id: string }[]; nextPageToken?: string };
+    messages.push(...(list.messages ?? []));
+    pageToken = list.nextPageToken;
+  } while (pageToken && messages.length < hardLimit);
+
+  if (messages.length > hardLimit) messages.splice(hardLimit);
 
   const CONCURRENCY = 10;
   const emails: RawEmail[] = [];

@@ -119,6 +119,54 @@ program
     }
   });
 
+const db = program.command("db").description("Manage the local email database");
+
+db.command("stats")
+  .description("Show database summary")
+  .option("--account <id>", "Filter by account")
+  .option("--json", "Output as JSON")
+  .action(async (opts) => {
+    const { dbStats } = await import("./commands/db.js");
+    ensureDataDir();
+    initDb();
+    try {
+      dbStats({ account: opts.account }, !!opts.json);
+    } finally {
+      closeDb();
+    }
+  });
+
+db.command("clean")
+  .description("Remove emails from the local DB (not from inbox)")
+  .option("--older-than <period>", "Remove emails older than (e.g. 90d, 3m)")
+  .option("--category <cat>", "Filter by category")
+  .option("--execute", "Actually delete (default is dry-run)")
+  .option("--json", "Output as JSON")
+  .action(async (opts) => {
+    const { dbClean } = await import("./commands/db.js");
+    ensureDataDir();
+    initDb();
+    try {
+      dbClean({ olderThan: opts.olderThan, category: opts.category, execute: !!opts.execute }, !!opts.json);
+    } finally {
+      closeDb();
+    }
+  });
+
+db.command("remove <id>")
+  .description("Remove a single email record from the local DB")
+  .option("--json", "Output as JSON")
+  .action(async (id, opts) => {
+    const { dbRemove } = await import("./commands/db.js");
+    ensureDataDir();
+    initDb();
+    try {
+      dbRemove(id, !!opts.json);
+    } finally {
+      closeDb();
+    }
+  });
+
 program
   .command("unsubscribe")
   .description("List and follow unsubscribe links from scanned emails")

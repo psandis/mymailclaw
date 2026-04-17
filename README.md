@@ -14,7 +14,7 @@ Email scanner, categorizer, and cleaner CLI for the OpenClaw ecosystem. Connects
 | `mmclaw scan` | Fetch and categorize emails (rules only) |
 | `mmclaw scan --ai` | Use AI to categorize uncertain emails |
 | `mmclaw scan --since 7d` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) — e.g. `7d`, `2w`, `1m`, `365d` |
-| `mmclaw scan --limit 200` | Limit emails fetched per account |
+| `mmclaw scan --limit 200` | Cap emails fetched per account (default: all emails in the date range) |
 | `mmclaw scan --account <id>` | Scan a specific account only |
 | `mmclaw list` | Show all emails grouped by category |
 | `mmclaw list --category marketing` | Filter by category |
@@ -27,6 +27,11 @@ Email scanner, categorizer, and cleaner CLI for the OpenClaw ecosystem. Connects
 | `mmclaw unsubscribe` | List emails with unsubscribe links (dry-run by default) |
 | `mmclaw unsubscribe --execute` | Follow HTTP unsubscribe links automatically |
 | `mmclaw unsubscribe --category newsletter` | Filter to a specific category |
+| `mmclaw db stats` | Show database summary — total count, categories, date range, last scan |
+| `mmclaw db clean --older-than 90d` | Preview emails to remove from local DB (dry-run by default) |
+| `mmclaw db clean --older-than 90d --execute` | Actually remove emails from local DB |
+| `mmclaw db clean --older-than 90d --category newsletter --execute` | Remove only newsletter emails older than 90 days from DB |
+| `mmclaw db remove <id>` | Remove a single email record from local DB |
 
 ## Categories
 
@@ -50,6 +55,28 @@ mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-2026-04-17.json
 ```
 
 Each entry in the cleanup file includes the email ID, date, sender, subject, AI summary, category, and intended action. You stay in full control.
+
+## DB Management
+
+The local DB grows over time as you scan. Use `mmclaw db` to inspect and clean it up.
+
+```bash
+# Show full DB summary
+mmclaw db stats
+
+# Preview what would be removed (dry-run)
+mmclaw db clean --older-than 90d
+mmclaw db clean --older-than 90d --category newsletter
+
+# Actually remove from DB (not from inbox)
+mmclaw db clean --older-than 90d --execute
+mmclaw db clean --older-than 90d --category newsletter --execute
+
+# Remove a single record
+mmclaw db remove <email-id>
+```
+
+`db clean` only removes records from the local SQLite database — it does not touch your inbox.
 
 ## Unsubscribe Workflow
 
@@ -138,7 +165,8 @@ mymailclaw/
 │   │   ├── scan.ts             # fetch + categorize
 │   │   ├── list.ts             # list by category
 │   │   ├── clean.ts            # dry-run + execute cleanup
-│   │   └── unsubscribe.ts      # list + follow unsubscribe links
+│   │   ├── unsubscribe.ts      # list + follow unsubscribe links
+│   │   └── db.ts               # db stats / clean / remove
 │   └── lib/
 │       ├── types.ts            # TypeScript interfaces
 │       ├── config.ts           # config and paths
@@ -159,7 +187,8 @@ mymailclaw/
 │   ├── scan.test.ts
 │   ├── list.test.ts
 │   ├── clean.test.ts
-│   └── unsubscribe.test.ts
+│   ├── unsubscribe.test.ts
+│   └── db-command.test.ts
 ├── package.json
 ├── tsconfig.json
 ├── tsup.config.ts
@@ -208,7 +237,7 @@ mmclaw clean --from-file ~/.mymailclaw/exports/cleanup-2026-04-17.json
 pnpm test
 ```
 
-71 tests across 9 test files covering rules, db, accounts, config, AI, scan, list, clean, and unsubscribe.
+76 tests across 10 test files covering rules, db, accounts, config, AI, scan, list, clean, unsubscribe, and db commands.
 
 ## Development
 
