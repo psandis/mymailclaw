@@ -18,47 +18,48 @@ Email scanner, categorizer, and cleaner CLI for the OpenClaw ecosystem. Connects
 
 Fetches emails from all configured accounts and categorizes them locally.
 
-| Option | Description |
-|--------|-------------|
-| _(no options)_ | Fetch and categorize using rules only |
-| `--since <period>` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) — e.g. `7d`, `2w`, `1m`, `365d` |
-| `--limit <n>` | Cap emails fetched per account (default: all emails in the date range) |
-| `--account <id\|email>` | Scan a specific account only |
-| `--ai` | Use AI to categorize emails that rules cannot classify with confidence |
+| Command | Description |
+|---------|-------------|
+| `mmclaw scan` | Fetch and categorize using rules only |
+| `mmclaw scan --since <period>` | Fetch emails since N days (`d`), weeks (`w`), or months (`m`) — e.g. `7d`, `2w`, `1m`, `365d` |
+| `mmclaw scan --limit <n>` | Cap emails fetched per account (default: all emails in the date range) |
+| `mmclaw scan --account <id\|email>` | Scan a specific account only |
+| `mmclaw scan --ai` | Use AI to categorize emails that rules cannot classify with confidence |
 
 ### List
 
-| Option | Description |
-|--------|-------------|
-| _(no options)_ | Show all emails grouped by category with counts |
-| `--category <cat>` | Filter by category |
-| `--limit <n>` | Limit number of results shown |
-| `--account <id\|email>` | Filter by account |
+| Command | Description |
+|---------|-------------|
+| `mmclaw list` | Show all emails grouped by category with counts |
+| `mmclaw list --category <cat>` | Filter by category |
+| `mmclaw list --limit <n>` | Limit number of results shown |
+| `mmclaw list --account <id\|email>` | Filter by account |
 
 ### Clean
 
 Dry-run by default — previews what would be cleaned and writes a review file.
 
-| Option | Description |
-|--------|-------------|
-| `--category <cat>` | Filter by category |
-| `--older-than <period>` | Filter by age — e.g. `30d`, `6m`, `365d` |
-| `--action <action>` | `delete` moves to Trash, `archive` removes from Inbox but keeps the email (default: `delete`) |
-| `--account <id\|email>` | Filter by account |
-| `--execute` | Actually perform the cleanup — shows a WARNING and requires confirmation |
-| `--from-file <path>` | Execute cleanup from a reviewed dry-run file — always prompts confirmation |
+| Command | Description |
+|---------|-------------|
+| `mmclaw clean` | Preview all emails that would be cleaned (dry-run) |
+| `mmclaw clean --category <cat>` | Filter by category |
+| `mmclaw clean --older-than <period>` | Filter by age — e.g. `30d`, `6m`, `365d` |
+| `mmclaw clean --action <action>` | `delete` moves to Trash, `archive` removes from Inbox but keeps the email (default: `delete`) |
+| `mmclaw clean --account <id\|email>` | Filter by account |
+| `mmclaw clean --execute` | Actually perform the cleanup — shows a WARNING and requires confirmation |
+| `mmclaw clean --from-file <path>` | Execute cleanup from a reviewed dry-run file — always prompts confirmation |
 
 ### Unsubscribe
 
 Reads `List-Unsubscribe` headers stored during scan. Dry-run by default — no action taken until `--execute`.
 
-| Option | Description |
-|--------|-------------|
-| _(no options)_ | List emails with unsubscribe links, showing HTTP vs mailto |
-| `--execute` | Follow HTTP unsubscribe links — unsubscribes on the sender's side, does not touch your inbox or DB |
-| `--category <cat>` | Filter by category |
-| `--account <id\|email>` | Filter by account |
-| `--limit <n>` | Cap number of emails processed |
+| Command | Description |
+|---------|-------------|
+| `mmclaw unsubscribe` | List emails with unsubscribe links, showing HTTP vs mailto |
+| `mmclaw unsubscribe --execute` | Follow HTTP unsubscribe links — unsubscribes on the sender's side, does not touch your inbox or DB |
+| `mmclaw unsubscribe --category <cat>` | Filter by category |
+| `mmclaw unsubscribe --account <id\|email>` | Filter by account |
+| `mmclaw unsubscribe --limit <n>` | Cap number of emails processed |
 
 ### DB
 
